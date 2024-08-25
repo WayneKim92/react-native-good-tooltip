@@ -31,6 +31,7 @@ interface ToolTipProps {
     width?: number;
     height?: number;
   };
+  arrowElement?: React.ReactElement;
   width?: number;
   containerStyle?: ViewStyle;
   color?: ColorValue | string;
@@ -61,6 +62,7 @@ export const Tooltip = ({
   colorType = 'primary',
   offset,
   arrowSize = DefaultArrowSize,
+  arrowElement,
   onVisibleChange,
   disableAutoHide = false,
   delayShowTime = 0,
@@ -200,6 +202,7 @@ export const Tooltip = ({
           })(),
         }}
       >
+        {}
         {/*{arrowSize === undefined && <ArrowIcon fill={tooltipColor} />}*/}
       </View>
     </View>
@@ -233,7 +236,7 @@ export const Tooltip = ({
         })(),
       }}
     >
-      {/*{arrowSize === undefined && <ArrowIcon fill={tooltipColor} />}*/}
+      {arrowElement === undefined && arrowElement}
     </View>
   );
 
