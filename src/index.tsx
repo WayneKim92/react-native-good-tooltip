@@ -9,10 +9,12 @@ import {
   type ColorValue,
   type LayoutChangeEvent,
   type ViewStyle,
+  Image,
 } from 'react-native';
 import { withAnchorPoint } from 'react-native-anchor-point';
 
 const SIDE_ARROW_INSET = 12;
+const CLOSE_ICON_SIZE = 16;
 
 interface ToolTipProps {
   placement: 'top' | 'bottom' | 'left' | 'right';
@@ -31,8 +33,12 @@ interface ToolTipProps {
     width?: number;
     height?: number;
   };
+  closeSize?: {
+    width?: number;
+    height?: number;
+  };
   arrowElement?: React.ReactElement;
-  width?: number;
+  tooltipWidth?: number;
   containerStyle?: ViewStyle;
   color?: ColorValue | string;
   colorType?: 'primary' | 'black';
@@ -52,7 +58,7 @@ const DefaultArrowSize = { width: 10, height: 6 };
 export const Tooltip = ({
   isVisible,
   anchor = 'center',
-  width = Dimensions.get('window').width * 0.3,
+  tooltipWidth = Dimensions.get('window').width * 0.3,
   containerStyle,
   text,
   children,
@@ -61,6 +67,7 @@ export const Tooltip = ({
   color,
   colorType = 'primary',
   offset,
+  closeSize,
   arrowSize = DefaultArrowSize,
   arrowElement,
   onVisibleChange,
@@ -351,7 +358,13 @@ export const Tooltip = ({
         {requiredConfirmation && (
           <>
             <View style={{ width: 8 }} />
-            {/*<CloseIcon width={16} height={16} fill={colors.palette.transparent['50_white']} />*/}
+            <Image
+              source={require('../assets/close.png')}
+              style={{
+                width: closeSize?.width || CLOSE_ICON_SIZE,
+                height: closeSize?.height || CLOSE_ICON_SIZE,
+              }}
+            />
           </>
         )}
       </View>
@@ -374,7 +387,7 @@ export const Tooltip = ({
         style={[
           {
             position: 'absolute',
-            width,
+            width: tooltipWidth,
             opacity: animatedValue,
           },
           transformsStyle,
