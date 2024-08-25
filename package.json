@@ -38,6 +38,7 @@
   "scripts": {
     "example": "yarn workspace react-native-good-tooltip-example",
     "test": "jest",
+    "postinstall": "npx patch-package",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
