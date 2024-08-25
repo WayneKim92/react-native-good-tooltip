@@ -23,6 +23,7 @@ export default function App() {
           text="This is a tooltip"
           placement={'bottom'}
           anchor={'left'}
+          requiredConfirmation
         >
           <View style={[styles.box, { backgroundColor: 'red' }]} />
         </Tooltip>
@@ -41,6 +42,7 @@ export default function App() {
           text="This is a tooltip"
           placement={'bottom'}
           anchor={'right'}
+          requiredConfirmation
         >
           <View style={[styles.box, { backgroundColor: 'blue' }]} />
         </Tooltip>
@@ -50,7 +52,6 @@ export default function App() {
         style={{
           backgroundColor: 'yellow',
           opacity: 0.9,
-          // zIndex: -1,
           paddingTop: 40,
           flexDirection: 'row',
           zIndex: 0,
@@ -133,6 +134,7 @@ export default function App() {
               anchor={'right'}
               text={'Top RIght'}
               isVisible={true}
+              requiredConfirmation
             >
               <View style={{ height: 50, backgroundColor: 'red', zIndex: 0 }}>
                 <Text>
@@ -149,6 +151,7 @@ export default function App() {
                 placement={'left'}
                 anchor={'top'}
                 colorType={'black'}
+                requiredConfirmation
               >
                 <View style={[styles.box, { backgroundColor: 'red' }]} />
               </Tooltip>

@@ -75,7 +75,7 @@ export const Tooltip = ({
   disableAutoHide = false,
   delayShowTime = 0,
   autoHideTime = 5000,
-  requiredConfirmation = true,
+  requiredConfirmation = false,
 }: ToolTipProps) => {
   const [currentIsVisible, setCurrentIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({
@@ -210,8 +210,7 @@ export const Tooltip = ({
           })(),
         }}
       >
-        {}
-        {/*{arrowSize === undefined && <ArrowIcon fill={tooltipColor} />}*/}
+        {arrowElement === undefined && arrowElement}
       </View>
     </View>
   );
