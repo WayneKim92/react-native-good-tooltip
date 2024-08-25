@@ -1,5 +1,5 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { Tooltip } from 'react-native-good-tooltip';
+import Tooltip from 'react-native-good-tooltip';
 
 export default function App() {
   const data = [
