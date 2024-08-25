@@ -32,7 +32,7 @@ export default function App() {
           isVisible={true}
           text="This is a tooltip"
           placement={'bottom'}
-          colorType={'black'}
+          styles={{ color: 'black' }}
         >
           <View style={[styles.box, { backgroundColor: 'green' }]} />
         </Tooltip>
@@ -150,7 +150,6 @@ export default function App() {
                 text="Left Tooltip"
                 placement={'left'}
                 anchor={'top'}
-                colorType={'black'}
                 requiredConfirmation
               >
                 <View style={[styles.box, { backgroundColor: 'red' }]} />
@@ -168,7 +167,6 @@ export default function App() {
                 text="Center Tooltip"
                 placement={'left'}
                 anchor={'bottom'}
-                colorType={'black'}
               >
                 <View style={[styles.box, { backgroundColor: 'blue' }]} />
               </Tooltip>

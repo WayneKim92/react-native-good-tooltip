@@ -14,8 +14,15 @@ import {
 import { withAnchorPoint } from 'react-native-anchor-point';
 import { createArrowShape, getAnchorPoint } from './functions';
 
+// DEFAULT VALUES
 const SIDE_ARROW_INSET = 12;
-const CLOSE_ICON_SIZE = 16;
+const CLOSE_ICON_SIZE = { width: 16, height: 16 };
+const ARROW_SIZE = { width: 10, height: 6 };
+const TOOLTIP_STYLE = {
+  width: Dimensions.get('window').width * 0.3,
+  paddingVertical: 8,
+  paddingHorizontal: 12,
+};
 
 interface ToolTipProps {
   placement: 'top' | 'bottom' | 'left' | 'right';
@@ -30,19 +37,20 @@ interface ToolTipProps {
       y?: number;
     };
   };
-  arrowSize?: {
-    width?: number;
-    height?: number;
-  };
-  closeSize?: {
-    width?: number;
-    height?: number;
-  };
   arrowElement?: React.ReactElement;
-  tooltipStyle?: ViewStyle;
-  containerStyle?: ViewStyle;
-  color?: ColorValue | string;
-  colorType?: 'primary' | 'black';
+  styles?: {
+    color?: ColorValue | 'primary';
+    containerStyle?: ViewStyle;
+    tooltipStyle?: ViewStyle;
+    arrowSize?: {
+      width?: number;
+      height?: number;
+    };
+    closeSize?: {
+      width?: number;
+      height?: number;
+    };
+  };
   text: string | React.ReactElement;
   children?: React.ReactElement;
   isVisible: boolean;
@@ -54,26 +62,19 @@ interface ToolTipProps {
   requiredConfirmation?: boolean;
 }
 
-const DefaultArrowSize = { width: 10, height: 6 };
-
 export const Tooltip = ({
   isVisible,
   anchor = 'center',
-  tooltipStyle = {
-    width: Dimensions.get('window').width * 0.3,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  styles = {
+    tooltipStyle: TOOLTIP_STYLE,
+    arrowSize: ARROW_SIZE,
+    closeSize: CLOSE_ICON_SIZE,
   },
-  containerStyle,
   text,
   children,
   placement,
   onPress,
-  color,
-  colorType = 'primary',
   offset,
-  closeSize,
-  arrowSize = DefaultArrowSize,
   arrowElement,
   onVisibleChange,
   disableAutoHide = false,
@@ -91,15 +92,15 @@ export const Tooltip = ({
 
   const isVerticalPlacement = placement === 'top' || placement === 'bottom';
   const tooltipColor = (() => {
-    if (color) return color;
-    if (colorType === 'black') return 'black';
+    if (styles?.color) return styles?.color;
 
     return '#3Eb489';
   })();
+
   const arrowStyle = {
     ...createArrowShape(
-      arrowSize?.width || DefaultArrowSize.width,
-      arrowSize?.height || DefaultArrowSize.height
+      styles?.arrowSize?.width || ARROW_SIZE.width,
+      styles?.arrowSize?.height || ARROW_SIZE.height
     ),
     borderBottomColor: tooltipColor,
   };
@@ -163,7 +164,7 @@ export const Tooltip = ({
             return 'center';
           })(),
         },
-        containerStyle,
+        styles?.containerStyle,
       ]}
     >
       <View
@@ -282,7 +283,7 @@ export const Tooltip = ({
       style={{
         backgroundColor: tooltipColor,
         borderRadius: 10,
-        ...tooltipStyle,
+        ...(styles?.tooltipStyle || TOOLTIP_STYLE),
       }}
     >
       <View
@@ -306,8 +307,8 @@ export const Tooltip = ({
             <Image
               source={require('../assets/close.png')}
               style={{
-                width: closeSize?.width || CLOSE_ICON_SIZE,
-                height: closeSize?.height || CLOSE_ICON_SIZE,
+                width: styles?.closeSize?.width || CLOSE_ICON_SIZE.width,
+                height: styles?.closeSize?.height || CLOSE_ICON_SIZE.height,
               }}
             />
           </>
@@ -333,7 +334,7 @@ export const Tooltip = ({
           {
             position: 'absolute',
             opacity: animatedValue,
-            width: tooltipStyle?.width,
+            width: styles?.tooltipStyle?.width,
           },
           transformsStyle,
         ]}
