@@ -57,3 +57,13 @@ export const getAnchorPoint = (placement: string, anchor: string) => {
 
   return { x, y };
 };
+
+export const createArrowShape = (width: number, height: number) => {
+  return {
+    borderLeftWidth: width / 2,
+    borderRightWidth: width / 2,
+    borderBottomWidth: height,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  };
+};

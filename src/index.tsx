@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import { withAnchorPoint } from 'react-native-anchor-point';
-import { getAnchorPoint } from './functions';
+import { createArrowShape, getAnchorPoint } from './functions';
 
 const SIDE_ARROW_INSET = 12;
 const CLOSE_ICON_SIZE = 16;
@@ -39,7 +39,7 @@ interface ToolTipProps {
     height?: number;
   };
   arrowElement?: React.ReactElement;
-  tooltipWidth?: number;
+  tooltipStyle?: ViewStyle;
   containerStyle?: ViewStyle;
   color?: ColorValue | string;
   colorType?: 'primary' | 'black';
@@ -59,7 +59,11 @@ const DefaultArrowSize = { width: 10, height: 6 };
 export const Tooltip = ({
   isVisible,
   anchor = 'center',
-  tooltipWidth = Dimensions.get('window').width * 0.3,
+  tooltipStyle = {
+    width: Dimensions.get('window').width * 0.3,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
   containerStyle,
   text,
   children,
@@ -92,16 +96,11 @@ export const Tooltip = ({
 
     return '#3Eb489';
   })();
-  const tooltipPadding = {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  };
   const arrowStyle = {
-    borderLeftWidth: (arrowSize?.width || DefaultArrowSize.width) / 2,
-    borderRightWidth: (arrowSize?.width || DefaultArrowSize.width) / 2,
-    borderBottomWidth: arrowSize?.height || DefaultArrowSize.height,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
+    ...createArrowShape(
+      arrowSize?.width || DefaultArrowSize.width,
+      arrowSize?.height || DefaultArrowSize.height
+    ),
     borderBottomColor: tooltipColor,
   };
 
@@ -281,9 +280,9 @@ export const Tooltip = ({
         onPress && onPress();
       }}
       style={{
-        ...tooltipPadding,
         backgroundColor: tooltipColor,
         borderRadius: 10,
+        ...tooltipStyle,
       }}
     >
       <View
@@ -333,8 +332,8 @@ export const Tooltip = ({
         style={[
           {
             position: 'absolute',
-            width: tooltipWidth,
             opacity: animatedValue,
+            width: tooltipStyle?.width,
           },
           transformsStyle,
         ]}
