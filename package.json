@@ -38,6 +38,7 @@
   "scripts": {
     "example": "yarn workspace react-native-good-tooltip-example",
     "test": "jest",
+    "postinstall": "npx patch-package",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
@@ -181,5 +182,8 @@
   "create-react-native-library": {
     "type": "library",
     "version": "0.41.0"
+  },
+  "dependencies": {
+    "react-native-anchor-point": "^1.0.6"
   }
 }
