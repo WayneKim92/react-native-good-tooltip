@@ -62,7 +62,7 @@ interface ToolTipProps {
   requiredConfirmation?: boolean;
 }
 
-export const Tooltip = ({
+const Tooltip = ({
   isVisible,
   anchor = 'center',
   styles = {
@@ -393,3 +393,5 @@ export const Tooltip = ({
     </View>
   );
 };
+
+export default Tooltip;
