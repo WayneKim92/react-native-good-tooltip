@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -25,6 +25,8 @@ const TOOLTIP_STYLE = {
 };
 
 interface ToolTipProps {
+  visible?: boolean;
+  rerenderKey?: any;
   placement: 'top' | 'bottom' | 'left' | 'right';
   anchor?: 'center' | 'left' | 'right' | 'top' | 'bottom';
   offset?: {
@@ -53,153 +55,208 @@ interface ToolTipProps {
   };
   text: string | React.ReactElement;
   children?: React.ReactElement;
-  isVisible: boolean;
   onPress?: () => void;
   onVisibleChange?: (isVisible: boolean) => void;
-  disableAutoHide?: boolean;
   delayShowTime?: number;
   autoHideTime?: number;
-  requiredConfirmation?: boolean;
 }
 
-const Tooltip = ({
-  isVisible,
-  anchor = 'center',
-  styles = {
-    tooltipStyle: TOOLTIP_STYLE,
-    arrowSize: ARROW_SIZE,
-    closeSize: CLOSE_ICON_SIZE,
-  },
-  text,
-  children,
-  placement,
-  onPress,
-  offset,
-  arrowElement,
-  onVisibleChange,
-  disableAutoHide = false,
-  delayShowTime = 0,
-  autoHideTime = 5000,
-  requiredConfirmation = false,
-}: ToolTipProps) => {
-  const [currentIsVisible, setCurrentIsVisible] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({
-    top: 0,
-    left: Platform.OS === 'android' && placement === 'right' ? -4 : 0,
-  });
-  const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
-  const animatedValue = new Animated.Value(0);
+const Tooltip = React.memo(
+  ({
+    visible,
+    anchor = 'center',
+    styles = {
+      tooltipStyle: TOOLTIP_STYLE,
+      arrowSize: ARROW_SIZE,
+      closeSize: CLOSE_ICON_SIZE,
+    },
+    text,
+    children,
+    placement,
+    onPress,
+    offset,
+    arrowElement,
+    onVisibleChange,
+    delayShowTime = 0,
+    autoHideTime = 5000,
+  }: ToolTipProps) => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const animatedValue = new Animated.Value(0);
 
-  const isVerticalPlacement = placement === 'top' || placement === 'bottom';
-  const tooltipColor = (() => {
-    if (styles?.color) return styles?.color;
+    const [tooltipPosition, setTooltipPosition] = useState({
+      top: 0,
+      left: Platform.OS === 'android' && placement === 'right' ? -4 : 0,
+    });
+    const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
+    const isVerticalPlacement = placement === 'top' || placement === 'bottom';
+    const tooltipColor = (() => {
+      if (styles?.color) return styles?.color;
 
-    return '#3Eb489';
-  })();
+      return '#3Eb489';
+    })();
+    const arrowStyle = {
+      ...createArrowShape(
+        styles?.arrowSize?.width || ARROW_SIZE.width,
+        styles?.arrowSize?.height || ARROW_SIZE.height
+      ),
+      borderBottomColor: tooltipColor,
+    };
+    const transformsStyle = (() => {
+      const { x, y } = getAnchorPoint(placement, anchor);
 
-  const arrowStyle = {
-    ...createArrowShape(
-      styles?.arrowSize?.width || ARROW_SIZE.width,
-      styles?.arrowSize?.height || ARROW_SIZE.height
-    ),
-    borderBottomColor: tooltipColor,
-  };
+      return withAnchorPoint(
+        { transform: [{ scale: animatedValue }] },
+        { x, y },
+        { width: tooltipSize.width, height: tooltipSize.height }
+      );
+    })();
 
-  useEffect(() => {
-    if (
-      autoHideTime > 0 &&
-      disableAutoHide === false &&
-      requiredConfirmation === false
-    ) {
+    const runAnimation = useCallback(
+      (isShowAnimation: boolean) => {
+        if (isShowAnimation) {
+          Animated.spring(animatedValue, {
+            toValue: 1,
+            speed: 6,
+            useNativeDriver: true,
+          }).start(() => {
+            onVisibleChange && onVisibleChange(true);
+          });
+        } else {
+          Animated.timing(animatedValue, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => {
+            onVisibleChange && onVisibleChange(false);
+          });
+        }
+      },
+      [animatedValue, onVisibleChange]
+    );
+
+    // show animation
+    useEffect(() => {
+      if (visible !== undefined && !visible) {
+        return;
+      }
+
       setTimeout(() => {
-        // 기본적으로 5초 뒤 사라짐 처리
-        setCurrentIsVisible(false);
-      }, autoHideTime);
-    }
-  }, [autoHideTime, disableAutoHide, requiredConfirmation]);
+        runAnimation(true);
+      }, delayShowTime);
+    }, [delayShowTime, runAnimation, visible]);
 
-  useEffect(() => {
-    if (onVisibleChange) {
-      onVisibleChange(isVisible);
-    }
-  }, [isVisible, onVisibleChange]);
+    // hide animation
+    useEffect(() => {
+      if (onPress) return;
 
-  useEffect(() => {
-    setTimeout(() => {
-      setCurrentIsVisible(isVisible);
-    }, delayShowTime);
-  }, [delayShowTime, isVisible]);
+      setTimeout(() => {
+        runAnimation(false);
+      }, delayShowTime + autoHideTime);
+    }, [autoHideTime, delayShowTime, onPress, runAnimation]);
 
-  const handleVerticalTooltipLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    if (placement === 'top') {
-      setTooltipPosition({ top: -height, left: 0 });
-    }
-    setTooltipSize({
-      width,
-      height,
-    });
-  };
+    const handleVerticalTooltipLayout = (event: LayoutChangeEvent) => {
+      const { width, height } = event.nativeEvent.layout;
+      if (placement === 'top') {
+        setTooltipPosition({ top: -height, left: 0 });
+      }
+      setTooltipSize({
+        width,
+        height,
+      });
+    };
 
-  const handleHorizontalTooltipLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
+    const handleHorizontalTooltipLayout = (event: LayoutChangeEvent) => {
+      const { width, height } = event.nativeEvent.layout;
 
-    const newLeft = width - 4;
-    if (placement === 'left') {
-      setTooltipPosition({ top: 0, left: -newLeft });
-    }
-    setTooltipSize({
-      width,
-      height,
-    });
-  };
+      const newLeft = width - 4;
+      if (placement === 'left') {
+        setTooltipPosition({ top: 0, left: -newLeft });
+      }
+      setTooltipSize({
+        width,
+        height,
+      });
+    };
 
-  const renderVerticalArrow = () => (
-    <View
-      style={[
-        {
-          alignItems: ((): ViewStyle['alignItems'] => {
-            if (anchor === 'left') return 'flex-start';
-            if (anchor === 'right') return 'flex-end';
-            return 'center';
-          })(),
-        },
-        styles?.containerStyle,
-      ]}
-    >
+    const renderVerticalArrow = () => (
+      <View
+        style={[
+          {
+            alignItems: ((): ViewStyle['alignItems'] => {
+              if (anchor === 'left') return 'flex-start';
+              if (anchor === 'right') return 'flex-end';
+              return 'center';
+            })(),
+          },
+          styles?.containerStyle,
+        ]}
+      >
+        <View
+          style={{
+            ...arrowStyle,
+            left: (() => {
+              let x = SIDE_ARROW_INSET + (offset?.arrow?.x || 0);
+
+              if (!isVerticalPlacement) {
+                x = offset?.arrow?.x || 0;
+              }
+              if (anchor === 'center') {
+                x = offset?.arrow?.x || 0;
+              }
+              if (anchor === 'right') {
+                x = -x;
+              }
+
+              return x;
+            })(),
+            top: (() => {
+              let y = SIDE_ARROW_INSET + (offset?.arrow?.y || 0);
+
+              if (isVerticalPlacement) {
+                y = offset?.arrow?.y || 0;
+              }
+              if (anchor === 'center') {
+                y = offset?.arrow?.y || 0;
+              }
+              if (anchor === 'bottom') {
+                y = -y;
+              }
+
+              // 은찬: AOS에서 간혈적으로 박스와 화살표 사이에 틈이 보이는 이슈가 있어서 0.1 추가
+              return y + (Platform.OS === 'android' ? 0.1 : 0);
+            })(),
+            transform: (() => {
+              if (placement === 'bottom') return [{ rotate: '0deg' }];
+              if (placement === 'top') return [{ rotate: '180deg' }];
+              if (placement === 'left') return [{ rotate: '90deg' }];
+              if (placement === 'right') return [{ rotate: '-90deg' }];
+              return undefined;
+            })(),
+          }}
+        >
+          {arrowElement === undefined && arrowElement}
+        </View>
+      </View>
+    );
+
+    const renderHorizontalArrow = () => (
       <View
         style={{
           ...arrowStyle,
           left: (() => {
-            let x = SIDE_ARROW_INSET + (offset?.arrow?.x || 0);
-
-            if (!isVerticalPlacement) {
-              x = offset?.arrow?.x || 0;
+            let left = 0;
+            if (placement === 'left') {
+              left = -2;
             }
-            if (anchor === 'center') {
-              x = offset?.arrow?.x || 0;
-            }
-            if (anchor === 'right') {
-              x = -x;
-            }
-
-            return x;
-          })(),
-          top: (() => {
-            let y = SIDE_ARROW_INSET + (offset?.arrow?.y || 0);
-
-            if (isVerticalPlacement) {
-              y = offset?.arrow?.y || 0;
-            }
-            if (anchor === 'center') {
-              y = offset?.arrow?.y || 0;
-            }
-            if (anchor === 'bottom') {
-              y = -y;
+            if (placement === 'right') {
+              left = 2;
             }
 
             // 은찬: AOS에서 간혈적으로 박스와 화살표 사이에 틈이 보이는 이슈가 있어서 0.1 추가
-            return y + (Platform.OS === 'android' ? 0.1 : 0);
+            return left + (Platform.OS === 'android' ? 0.1 : 0);
+          })(),
+          top: (() => {
+            return 0;
           })(),
           transform: (() => {
             if (placement === 'bottom') return [{ rotate: '0deg' }];
@@ -212,186 +269,148 @@ const Tooltip = ({
       >
         {arrowElement === undefined && arrowElement}
       </View>
-    </View>
-  );
+    );
 
-  const renderHorizontalArrow = () => (
-    <View
-      style={{
-        ...arrowStyle,
-        left: (() => {
-          let left = 0;
-          if (placement === 'left') {
-            left = -2;
-          }
-          if (placement === 'right') {
-            left = 2;
+    const renderTooltipContent = () => (
+      // View Overflow 영역에 있는 Tooltip을 선택하기 위해 TouchableOpacity 사용
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          if (!onPress) {
+            return;
           }
 
-          // 은찬: AOS에서 간혈적으로 박스와 화살표 사이에 틈이 보이는 이슈가 있어서 0.1 추가
-          return left + (Platform.OS === 'android' ? 0.1 : 0);
-        })(),
-        top: (() => {
-          return 0;
-        })(),
-        transform: (() => {
-          if (placement === 'bottom') return [{ rotate: '0deg' }];
-          if (placement === 'top') return [{ rotate: '180deg' }];
-          if (placement === 'left') return [{ rotate: '90deg' }];
-          if (placement === 'right') return [{ rotate: '-90deg' }];
-          return undefined;
-        })(),
-      }}
-    >
-      {arrowElement === undefined && arrowElement}
-    </View>
-  );
+          runAnimation(false);
+          onPress && onPress();
+        }}
+        style={{
+          backgroundColor: tooltipColor,
+          borderRadius: 10,
+          ...(styles?.tooltipStyle || TOOLTIP_STYLE),
+        }}
+      >
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          pointerEvents={'box-none'}
+        >
+          {/* content */}
+          {typeof text !== 'string' ? (
+            text
+          ) : (
+            <Text
+              style={{ flexShrink: 1, color: 'white' }}
+              numberOfLines={2}
+              children={text}
+            />
+          )}
 
-  const transformsStyle = (() => {
-    const { x, y } = getAnchorPoint(placement, anchor);
+          {onPress && (
+            <>
+              <View style={{ width: 8 }} />
+              <Image
+                source={require('../assets/close.png')}
+                style={{
+                  width: styles?.closeSize?.width || CLOSE_ICON_SIZE.width,
+                  height: styles?.closeSize?.height || CLOSE_ICON_SIZE.height,
+                }}
+              />
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
 
-    if (currentIsVisible) {
-      Animated.spring(animatedValue, {
-        toValue: 1,
-        speed: 6,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      animatedValue.setValue(1);
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+    const renderVerticalTooltip = () => (
+      <View
+        style={{
+          alignItems: ((): ViewStyle['alignItems'] => {
+            if (anchor === 'left') return 'flex-start';
+            if (anchor === 'right') return 'flex-end';
+            return 'center';
+          })(),
+          top: tooltipPosition.top + (offset?.position?.y || 0),
+          left: tooltipPosition.left + (offset?.position?.x || 0),
+        }}
+      >
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              opacity: animatedValue,
+              width: styles?.tooltipStyle?.width,
+            },
+            transformsStyle,
+          ]}
+          onLayout={handleVerticalTooltipLayout}
+        >
+          {placement === 'top' && renderTooltipContent()}
+          {renderVerticalArrow()}
+          {placement === 'bottom' && renderTooltipContent()}
+        </Animated.View>
+      </View>
+    );
+    const renderHorizontalTooltip = () => (
+      // 툴팁 & 화살표 정렬 기준 ( top, center, bottom )
+      <View
+        style={{
+          justifyContent: (() => {
+            if (anchor === 'top') return 'flex-start';
+            if (anchor === 'bottom') return 'flex-end';
+            return 'center';
+          })(),
+        }}
+      >
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              flexDirection: 'row',
+              alignItems: 'center',
+              left: tooltipPosition.left + (offset?.position?.x || 0),
+              opacity: animatedValue,
+            },
+            transformsStyle,
+          ]}
+          onLayout={handleHorizontalTooltipLayout}
+        >
+          {placement === 'left' && renderTooltipContent()}
+          {renderHorizontalArrow()}
+          {placement === 'right' && renderTooltipContent()}
+        </Animated.View>
+      </View>
+    );
+
+    return (
+      <View collapsable={false} style={{ zIndex: 500 }}>
+        {placement === 'top' && renderVerticalTooltip()}
+        {isVerticalPlacement ? (
+          children
+        ) : (
+          <View style={{ flexDirection: 'row' }}>
+            {placement === 'left' && renderHorizontalTooltip()}
+            {children}
+            {placement === 'right' && renderHorizontalTooltip()}
+          </View>
+        )}
+        {placement === 'bottom' && renderVerticalTooltip()}
+      </View>
+    );
+  },
+  (prevProps, nextProps) => {
+    // 참이면 리덴더링 하지 않아도 됨
+    let notNeedToRerender = true;
+
+    if (prevProps.visible !== nextProps.visible) {
+      notNeedToRerender = false;
+    }
+    if (prevProps.rerenderKey !== nextProps.rerenderKey) {
+      notNeedToRerender = false;
     }
 
-    return withAnchorPoint(
-      { transform: [{ scale: animatedValue }] },
-      { x, y },
-      { width: tooltipSize.width, height: tooltipSize.height }
-    );
-  })();
+    console.log('리렌더링 필요?', notNeedToRerender);
 
-  const renderTooltipContent = () => (
-    // View Overflow 영역에 있는 Tooltip을 선택하기 위해 TouchableOpacity 사용
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={() => {
-        setCurrentIsVisible((prevState) => !prevState);
-        onPress && onPress();
-      }}
-      style={{
-        backgroundColor: tooltipColor,
-        borderRadius: 10,
-        ...(styles?.tooltipStyle || TOOLTIP_STYLE),
-      }}
-    >
-      <View
-        style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-        pointerEvents={'box-none'}
-      >
-        {/* content */}
-        {typeof text !== 'string' ? (
-          text
-        ) : (
-          <Text
-            style={{ flexShrink: 1, color: 'white' }}
-            numberOfLines={2}
-            children={text}
-          />
-        )}
-
-        {requiredConfirmation && (
-          <>
-            <View style={{ width: 8 }} />
-            <Image
-              source={require('../assets/close.png')}
-              style={{
-                width: styles?.closeSize?.width || CLOSE_ICON_SIZE.width,
-                height: styles?.closeSize?.height || CLOSE_ICON_SIZE.height,
-              }}
-            />
-          </>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderVerticalTooltip = () => (
-    <View
-      style={{
-        alignItems: ((): ViewStyle['alignItems'] => {
-          if (anchor === 'left') return 'flex-start';
-          if (anchor === 'right') return 'flex-end';
-          return 'center';
-        })(),
-        top: tooltipPosition.top + (offset?.position?.y || 0),
-        left: tooltipPosition.left + (offset?.position?.x || 0),
-      }}
-    >
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            opacity: animatedValue,
-            width: styles?.tooltipStyle?.width,
-          },
-          transformsStyle,
-        ]}
-        onLayout={handleVerticalTooltipLayout}
-      >
-        {placement === 'top' && renderTooltipContent()}
-        {renderVerticalArrow()}
-        {placement === 'bottom' && renderTooltipContent()}
-      </Animated.View>
-    </View>
-  );
-  const renderHorizontalTooltip = () => (
-    // 툴팁 & 화살표 정렬 기준 ( top, center, bottom )
-    <View
-      style={{
-        justifyContent: (() => {
-          if (anchor === 'top') return 'flex-start';
-          if (anchor === 'bottom') return 'flex-end';
-          return 'center';
-        })(),
-      }}
-    >
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            flexDirection: 'row',
-            alignItems: 'center',
-            left: tooltipPosition.left + (offset?.position?.x || 0),
-            opacity: animatedValue,
-          },
-          transformsStyle,
-        ]}
-        onLayout={handleHorizontalTooltipLayout}
-      >
-        {placement === 'left' && renderTooltipContent()}
-        {renderHorizontalArrow()}
-        {placement === 'right' && renderTooltipContent()}
-      </Animated.View>
-    </View>
-  );
-
-  return (
-    <View collapsable={false} style={{ zIndex: 500 }}>
-      {placement === 'top' && renderVerticalTooltip()}
-      {isVerticalPlacement ? (
-        children
-      ) : (
-        <View style={{ flexDirection: 'row' }}>
-          {placement === 'left' && renderHorizontalTooltip()}
-          {children}
-          {placement === 'right' && renderHorizontalTooltip()}
-        </View>
-      )}
-      {placement === 'bottom' && renderVerticalTooltip()}
-    </View>
-  );
-};
+    return notNeedToRerender;
+  }
+);
 
 export default Tooltip;

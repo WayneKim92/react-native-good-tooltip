@@ -1,12 +1,16 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import Tooltip from 'react-native-good-tooltip';
+import { useState } from 'react';
 
 export default function App() {
-  const data = [
-    'In FlatList',
-    'zIndex must be specified using',
-    'CellRendererComponent.',
-  ];
+  const [inputText, setInputText] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -19,17 +23,15 @@ export default function App() {
         }}
       >
         <Tooltip
-          isVisible={true}
           text="This is a tooltip"
           placement={'bottom'}
           anchor={'left'}
-          requiredConfirmation
+          onPress={() => {}}
         >
           <View style={[styles.box, { backgroundColor: 'red' }]} />
         </Tooltip>
 
         <Tooltip
-          isVisible={true}
           text="This is a tooltip"
           placement={'bottom'}
           styles={{ color: 'black' }}
@@ -37,13 +39,7 @@ export default function App() {
           <View style={[styles.box, { backgroundColor: 'green' }]} />
         </Tooltip>
 
-        <Tooltip
-          isVisible={true}
-          text="This is a tooltip"
-          placement={'bottom'}
-          anchor={'right'}
-          requiredConfirmation
-        >
+        <Tooltip text="This is a tooltip" placement={'bottom'} anchor={'right'}>
           <View style={[styles.box, { backgroundColor: 'blue' }]} />
         </Tooltip>
       </View>
@@ -77,102 +73,27 @@ export default function App() {
         </View>
       </View>
 
-      {/* Body*/}
+      <Tooltip placement={'bottom'} text={'Input Text'}>
+        <TextInput
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder={'Input text'}
+          style={{ padding: 16, backgroundColor: 'gray' }}
+        />
+      </Tooltip>
+
       <FlatList
-        data={data}
-        // style={{ flexGrow: 1 }}
-        CellRendererComponent={({ index, style, ...props }) => {
+        data={[1, 2, 3]}
+        renderItem={() => {
           return (
-            <View
-              style={[
-                style,
-                {
-                  zIndex: data.length - index,
-                },
-              ]}
-              {...props}
+            <TextInput
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder={'Input text'}
+              style={{ padding: 16, backgroundColor: 'gray' }}
             />
           );
         }}
-        renderItem={({ item, index }) => (
-          <Tooltip
-            isVisible={true}
-            placement={'bottom'}
-            anchor={(() => {
-              if (index % 3 === 0) return 'right';
-              if (index % 2 === 0) return 'center';
-
-              return 'left';
-            })()}
-            text={'List Item Tooltip ' + index}
-          >
-            <View
-              style={{
-                paddingVertical: 15,
-                backgroundColor: 'blue',
-                opacity: 0.4,
-                justifyContent: 'center',
-                alignItems: 'flex-end',
-                paddingHorizontal: 16,
-              }}
-            >
-              <Text style={{ color: 'white' }}>{`${item}`}</Text>
-            </View>
-          </Tooltip>
-        )}
-        ListFooterComponent={() => (
-          <View
-            style={{
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              backgroundColor: '#8851bc',
-              height: 500,
-            }}
-          >
-            <Tooltip
-              placement={'top'}
-              anchor={'right'}
-              text={'Top RIght'}
-              isVisible={true}
-              requiredConfirmation
-            >
-              <View style={{ height: 50, backgroundColor: 'red', zIndex: 0 }}>
-                <Text>
-                  There may be situations where you need to add the overflow:
-                  'visible' style.
-                </Text>
-              </View>
-            </Tooltip>
-
-            <View style={{ zIndex: 0 }}>
-              <Tooltip
-                isVisible={true}
-                text="Left Tooltip"
-                placement={'left'}
-                anchor={'top'}
-                requiredConfirmation
-              >
-                <View style={[styles.box, { backgroundColor: 'red' }]} />
-              </Tooltip>
-              <Tooltip
-                isVisible={true}
-                text="Center Tooltip"
-                placement={'right'}
-                anchor={'center'}
-              >
-                <View style={[styles.box, { backgroundColor: 'green' }]} />
-              </Tooltip>
-              <Tooltip
-                isVisible={true}
-                text="Center Tooltip"
-                placement={'left'}
-                anchor={'bottom'}
-              >
-                <View style={[styles.box, { backgroundColor: 'blue' }]} />
-              </Tooltip>
-            </View>
-          </View>
-        )}
       />
     </SafeAreaView>
   );
