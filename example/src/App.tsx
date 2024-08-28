@@ -3,7 +3,7 @@ import Tooltip from 'react-native-good-tooltip';
 import { useState } from 'react';
 
 export default function App() {
-  const [inputText, _setInputText] = useState('초기 텍스트');
+  const [inputText, setInputText] = useState('초기 텍스트');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,12 +66,11 @@ export default function App() {
         </View>
       </View>
 
-      <Tooltip placement={'bottom'} text={'Input Text'}>
+      <Tooltip placement={'bottom'} text={'Input Text'} visible={true}>
         <TextInput
           value={inputText}
           placeholder={'Input text'}
-          // 아래 메소드 활성화 하면 이슈 생김
-          // onChangeText={setInputText}
+          onChangeText={setInputText}
           style={{ padding: 16, backgroundColor: 'gray' }}
         />
       </Tooltip>
