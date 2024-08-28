@@ -1,6 +1,6 @@
 {
   "name": "react-native-good-tooltip",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "This tooltip was created with the best UX in mind.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -38,6 +38,7 @@
   "scripts": {
     "example": "yarn workspace react-native-good-tooltip-example",
     "test": "jest",
+    "postinstall": "npx patch-package",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",

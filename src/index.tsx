@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Animated,
   Dimensions,
@@ -25,6 +31,8 @@ const TOOLTIP_STYLE = {
 };
 
 interface ToolTipProps {
+  visible?: boolean;
+  rerenderKey?: any;
   placement: 'top' | 'bottom' | 'left' | 'right';
   anchor?: 'center' | 'left' | 'right' | 'top' | 'bottom';
   offset?: {
@@ -53,17 +61,14 @@ interface ToolTipProps {
   };
   text: string | React.ReactElement;
   children?: React.ReactElement;
-  isVisible: boolean;
   onPress?: () => void;
   onVisibleChange?: (isVisible: boolean) => void;
-  disableAutoHide?: boolean;
   delayShowTime?: number;
   autoHideTime?: number;
-  requiredConfirmation?: boolean;
 }
 
 const Tooltip = ({
-  isVisible,
+  visible,
   anchor = 'center',
   styles = {
     tooltipStyle: TOOLTIP_STYLE,
@@ -77,26 +82,24 @@ const Tooltip = ({
   offset,
   arrowElement,
   onVisibleChange,
-  disableAutoHide = false,
   delayShowTime = 0,
   autoHideTime = 5000,
-  requiredConfirmation = false,
 }: ToolTipProps) => {
-  const [currentIsVisible, setCurrentIsVisible] = useState(false);
+  const showAnimationRef = useRef(false);
+  const hideAnimationRef = useRef(false);
+  const animatedValue = useMemo(() => new Animated.Value(0), []);
+
   const [tooltipPosition, setTooltipPosition] = useState({
     top: 0,
     left: Platform.OS === 'android' && placement === 'right' ? -4 : 0,
   });
   const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
-  const animatedValue = new Animated.Value(0);
-
   const isVerticalPlacement = placement === 'top' || placement === 'bottom';
   const tooltipColor = (() => {
     if (styles?.color) return styles?.color;
 
     return '#3Eb489';
   })();
-
   const arrowStyle = {
     ...createArrowShape(
       styles?.arrowSize?.width || ARROW_SIZE.width,
@@ -104,31 +107,64 @@ const Tooltip = ({
     ),
     borderBottomColor: tooltipColor,
   };
+  const transformsStyle = (() => {
+    const { x, y } = getAnchorPoint(placement, anchor);
 
+    return withAnchorPoint(
+      { transform: [{ scale: animatedValue }] },
+      { x, y },
+      { width: tooltipSize.width, height: tooltipSize.height }
+    );
+  })();
+
+  const runAnimation = useCallback(
+    (isShowAnimation: boolean) => {
+      if (isShowAnimation) {
+        if (showAnimationRef.current) return;
+
+        Animated.spring(animatedValue, {
+          toValue: 1,
+          speed: 6,
+          useNativeDriver: true,
+        }).start(() => {
+          onVisibleChange && onVisibleChange(true);
+        });
+        showAnimationRef.current = true;
+      } else {
+        if (hideAnimationRef.current) return;
+
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          onVisibleChange && onVisibleChange(false);
+        });
+        hideAnimationRef.current = true;
+      }
+    },
+    [animatedValue, onVisibleChange]
+  );
+
+  // show animation
   useEffect(() => {
-    if (
-      autoHideTime > 0 &&
-      disableAutoHide === false &&
-      requiredConfirmation === false
-    ) {
-      setTimeout(() => {
-        // 기본적으로 5초 뒤 사라짐 처리
-        setCurrentIsVisible(false);
-      }, autoHideTime);
+    if (visible !== undefined && !visible) {
+      return;
     }
-  }, [autoHideTime, disableAutoHide, requiredConfirmation]);
 
-  useEffect(() => {
-    if (onVisibleChange) {
-      onVisibleChange(isVisible);
-    }
-  }, [isVisible, onVisibleChange]);
-
-  useEffect(() => {
     setTimeout(() => {
-      setCurrentIsVisible(isVisible);
+      runAnimation(true);
     }, delayShowTime);
-  }, [delayShowTime, isVisible]);
+  }, [delayShowTime, runAnimation, visible]);
+
+  // hide animation
+  useEffect(() => {
+    if (onPress) return;
+
+    setTimeout(() => {
+      runAnimation(false);
+    }, delayShowTime + autoHideTime);
+  }, [autoHideTime, delayShowTime, onPress, runAnimation]);
 
   const handleVerticalTooltipLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -247,37 +283,16 @@ const Tooltip = ({
     </View>
   );
 
-  const transformsStyle = (() => {
-    const { x, y } = getAnchorPoint(placement, anchor);
-
-    if (currentIsVisible) {
-      Animated.spring(animatedValue, {
-        toValue: 1,
-        speed: 6,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      animatedValue.setValue(1);
-      Animated.timing(animatedValue, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-
-    return withAnchorPoint(
-      { transform: [{ scale: animatedValue }] },
-      { x, y },
-      { width: tooltipSize.width, height: tooltipSize.height }
-    );
-  })();
-
   const renderTooltipContent = () => (
     // View Overflow 영역에 있는 Tooltip을 선택하기 위해 TouchableOpacity 사용
     <TouchableOpacity
       activeOpacity={1}
       onPress={() => {
-        setCurrentIsVisible((prevState) => !prevState);
+        if (!onPress) {
+          return;
+        }
+
+        runAnimation(false);
         onPress && onPress();
       }}
       style={{
@@ -301,7 +316,7 @@ const Tooltip = ({
           />
         )}
 
-        {requiredConfirmation && (
+        {onPress && (
           <>
             <View style={{ width: 8 }} />
             <Image
