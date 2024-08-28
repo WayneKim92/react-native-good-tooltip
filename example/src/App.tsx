@@ -1,16 +1,9 @@
-import {
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput } from 'react-native';
 import Tooltip from 'react-native-good-tooltip';
 import { useState } from 'react';
 
 export default function App() {
-  const [inputText, setInputText] = useState('');
+  const [inputText, _setInputText] = useState('초기 텍스트');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,25 +69,26 @@ export default function App() {
       <Tooltip placement={'bottom'} text={'Input Text'}>
         <TextInput
           value={inputText}
-          onChangeText={setInputText}
           placeholder={'Input text'}
+          // 아래 메소드 활성화 하면 이슈 생김
+          // onChangeText={setInputText}
           style={{ padding: 16, backgroundColor: 'gray' }}
         />
       </Tooltip>
 
-      <FlatList
-        data={[1, 2, 3]}
-        renderItem={() => {
-          return (
-            <TextInput
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder={'Input text'}
-              style={{ padding: 16, backgroundColor: 'gray' }}
-            />
-          );
-        }}
-      />
+      {/*<FlatList*/}
+      {/*  data={[1, 2, 3]}*/}
+      {/*  renderItem={() => {*/}
+      {/*    return (*/}
+      {/*      <TextInput*/}
+      {/*        value={inputText}*/}
+      {/*        onChangeText={setInputText}*/}
+      {/*        placeholder={'Input text'}*/}
+      {/*        style={{ padding: 16, backgroundColor: 'gray' }}*/}
+      {/*      />*/}
+      {/*    );*/}
+      {/*  }}*/}
+      {/*/>*/}
     </SafeAreaView>
   );
 }

@@ -407,8 +407,6 @@ const Tooltip = React.memo(
       notNeedToRerender = false;
     }
 
-    console.log('리렌더링 필요?', notNeedToRerender);
-
     return notNeedToRerender;
   }
 );
