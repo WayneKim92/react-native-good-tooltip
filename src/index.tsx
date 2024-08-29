@@ -315,7 +315,11 @@ const Tooltip = ({
                 return numberOfLines;
               }
 
-              if (numberOfLines === -1) {
+              if (
+                numberOfLines < 0 ||
+                numberOfLines === null ||
+                numberOfLines === undefined
+              ) {
                 return undefined;
               }
 
