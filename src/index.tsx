@@ -60,6 +60,7 @@ interface ToolTipProps {
   delayShowTime?: number;
   autoHideTime?: number;
   disableAutoHide?: boolean;
+  disablePressToClose?: boolean;
 }
 
 const Tooltip = ({
@@ -80,6 +81,7 @@ const Tooltip = ({
   delayShowTime = 0,
   autoHideTime = 5000,
   disableAutoHide,
+  disablePressToClose = true,
 }: ToolTipProps) => {
   const animatedValue = useMemo(() => new Animated.Value(0), []);
 
@@ -283,7 +285,7 @@ const Tooltip = ({
     <TouchableOpacity
       activeOpacity={1}
       onPress={() => {
-        if (!onPress) {
+        if (!disablePressToClose) {
           return;
         }
 
