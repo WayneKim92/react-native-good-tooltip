@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -65,6 +59,7 @@ interface ToolTipProps {
   onVisibleChange?: (isVisible: boolean) => void;
   delayShowTime?: number;
   autoHideTime?: number;
+  disableAutoHide?: boolean;
 }
 
 const Tooltip = ({
@@ -84,9 +79,8 @@ const Tooltip = ({
   onVisibleChange,
   delayShowTime = 0,
   autoHideTime = 5000,
+  disableAutoHide,
 }: ToolTipProps) => {
-  const showAnimationRef = useRef(false);
-  const hideAnimationRef = useRef(false);
   const animatedValue = useMemo(() => new Animated.Value(0), []);
 
   const [tooltipPosition, setTooltipPosition] = useState({
@@ -120,8 +114,6 @@ const Tooltip = ({
   const runAnimation = useCallback(
     (isShowAnimation: boolean) => {
       if (isShowAnimation) {
-        if (showAnimationRef.current) return;
-
         Animated.spring(animatedValue, {
           toValue: 1,
           speed: 6,
@@ -129,10 +121,7 @@ const Tooltip = ({
         }).start(() => {
           onVisibleChange && onVisibleChange(true);
         });
-        showAnimationRef.current = true;
       } else {
-        if (hideAnimationRef.current) return;
-
         Animated.timing(animatedValue, {
           toValue: 0,
           duration: 300,
@@ -140,7 +129,6 @@ const Tooltip = ({
         }).start(() => {
           onVisibleChange && onVisibleChange(false);
         });
-        hideAnimationRef.current = true;
       }
     },
     [animatedValue, onVisibleChange]
@@ -159,12 +147,19 @@ const Tooltip = ({
 
   // hide animation
   useEffect(() => {
-    if (onPress) return;
+    if (onPress || disableAutoHide) return;
 
     setTimeout(() => {
       runAnimation(false);
     }, delayShowTime + autoHideTime);
-  }, [autoHideTime, delayShowTime, onPress, runAnimation]);
+  }, [autoHideTime, delayShowTime, disableAutoHide, onPress, runAnimation]);
+
+  // hide by props.visible
+  useEffect(() => {
+    if (visible === false) {
+      runAnimation(false);
+    }
+  }, [runAnimation, visible]);
 
   const handleVerticalTooltipLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
