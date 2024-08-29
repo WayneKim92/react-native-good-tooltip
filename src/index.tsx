@@ -61,6 +61,7 @@ interface ToolTipProps {
   autoHideTime?: number;
   disableAutoHide?: boolean;
   disablePressToClose?: boolean;
+  numberOfLines?: number;
 }
 
 const Tooltip = ({
@@ -82,6 +83,7 @@ const Tooltip = ({
   autoHideTime = 5000,
   disableAutoHide,
   disablePressToClose = true,
+  numberOfLines = 2,
 }: ToolTipProps) => {
   const animatedValue = useMemo(() => new Animated.Value(0), []);
 
@@ -308,7 +310,17 @@ const Tooltip = ({
         ) : (
           <Text
             style={{ flexShrink: 1, color: 'white' }}
-            numberOfLines={2}
+            numberOfLines={(() => {
+              if (numberOfLines > 0) {
+                return numberOfLines;
+              }
+
+              if (numberOfLines === -1) {
+                return undefined;
+              }
+
+              return 2;
+            })()}
             children={text}
           />
         )}
