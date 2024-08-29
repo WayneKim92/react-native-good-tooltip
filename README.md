@@ -37,7 +37,7 @@ import Tooltip from 'react-native-good-tooltip';
 <table>
   <tr>
     <td>
-      <video src="https://github.com/user-attachments/assets/b7c69e2f-ef99-476b-bca7-bd9bed3c65bf" width="300" height="600" />
+      <video src="https://github.com/user-attachments/assets/ba8f7cec-8361-4e3d-b24a-88b23f258d18" width="300" height="600" />
     </td>
   </tr>
 </table>
