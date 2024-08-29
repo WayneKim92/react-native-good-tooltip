@@ -1,4 +1,12 @@
-import { SafeAreaView, StyleSheet, Text, View, TextInput } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ScrollView,
+  FlatList,
+} from 'react-native';
 import Tooltip from 'react-native-good-tooltip';
 import { useState } from 'react';
 
@@ -8,8 +16,8 @@ export default function App() {
   const [tooltipMessage, setTooltipMessage] = useState('Hello');
   const [isFocused, setIsFocused] = useState(false);
 
-  // Example - FlatList
-  // const data = [1, 2, 3];
+  // Example - ScrollView and FlatList
+  const [inputTextInScrollVIew, setInputTextInScrollVIew] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,38 +111,55 @@ export default function App() {
         />
       </Tooltip>
 
-      {/*<FlatList*/}
-      {/*  data={data}*/}
-      {/*  keyExtractor={(item) => item.toString()}*/}
-      {/*  CellRendererComponent={({ index, style, ...props }) => {*/}
-      {/*    return (*/}
-      {/*      <View*/}
-      {/*        style={[*/}
-      {/*          style,*/}
-      {/*          {*/}
-      {/*            zIndex: data.length - index,*/}
-      {/*          },*/}
-      {/*        ]}*/}
-      {/*        {...props}*/}
-      {/*      />*/}
-      {/*    );*/}
-      {/*  }}*/}
-      {/*  renderItem={() => {*/}
-      {/*    console.log('####################################');*/}
-      {/*    console.log('리렌더링?');*/}
-      {/*    console.log('####################################');*/}
-      {/*    return (*/}
-      {/*      <MemoizedTooltip placement={'bottom'} text={'This is a tooltip'}>*/}
-      {/*        <TextInput*/}
-      {/*          value={inputText}*/}
-      {/*          onChangeText={setInputText}*/}
-      {/*          placeholder={'Input text'}*/}
-      {/*          style={{ padding: 16, backgroundColor: 'gray' }}*/}
-      {/*        />*/}
-      {/*      </MemoizedTooltip>*/}
-      {/*    );*/}
-      {/*  }}*/}
-      {/*/>*/}
+      <View style={{ height: 100 }} />
+
+      <FlatList
+        data={[0]}
+        style={{ backgroundColor: 'blue', zIndex: 100, overflow: 'visible' }}
+        renderItem={() => (
+          <Tooltip
+            placement={'top'}
+            text={'overflowed ui in FlatList can not touch'}
+            disableAutoHide
+            numberOfLines={-1}
+          >
+            <Tooltip placement={'bottom'} text={'In FlatList'} disableAutoHide>
+              <TextInput
+                placeholder={'Input text'}
+                value={inputTextInScrollVIew}
+                style={{ padding: 16, backgroundColor: 'gray' }}
+                onChangeText={setInputTextInScrollVIew}
+              />
+            </Tooltip>
+          </Tooltip>
+        )}
+      />
+
+      <View style={{ height: 50, zIndex: 200 }} />
+
+      <ScrollView
+        style={{
+          backgroundColor: 'green',
+          overflow: 'visible',
+          zIndex: 300,
+        }}
+      >
+        <Tooltip
+          placement={'top'}
+          text={'overflowed ui in ScrollView can not touch'}
+          disableAutoHide
+          numberOfLines={-1}
+        >
+          <Tooltip placement={'bottom'} text={'In ScrollView'} disableAutoHide>
+            <TextInput
+              placeholder={'Input text'}
+              value={inputTextInScrollVIew}
+              style={{ padding: 16, backgroundColor: 'gray' }}
+              onChangeText={setInputTextInScrollVIew}
+            />
+          </Tooltip>
+        </Tooltip>
+      </ScrollView>
     </SafeAreaView>
   );
 }
