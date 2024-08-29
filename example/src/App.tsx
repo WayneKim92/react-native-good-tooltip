@@ -3,7 +3,13 @@ import Tooltip from 'react-native-good-tooltip';
 import { useState } from 'react';
 
 export default function App() {
-  const [inputText, setInputText] = useState('초기 텍스트');
+  // Example - TextInput
+  const [inputText, setInputText] = useState('');
+  const [tooltipMessage, setTooltipMessage] = useState('Hello');
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Example - FlatList
+  // const data = [1, 2, 3];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,25 +72,66 @@ export default function App() {
         </View>
       </View>
 
-      <Tooltip placement={'bottom'} text={'Input Text'} visible={true}>
+      <Tooltip
+        placement={'bottom'}
+        anchor={'left'}
+        text={tooltipMessage}
+        visible={isFocused}
+        disableAutoHide
+        styles={{
+          color: tooltipMessage === 'Correct!' ? 'blue' : undefined,
+        }}
+      >
         <TextInput
           value={inputText}
-          placeholder={'Input text'}
-          onChangeText={setInputText}
-          style={{ padding: 16, backgroundColor: 'gray' }}
+          placeholder={'Input secret password'}
+          placeholderTextColor={'#6cbd67'}
+          onChangeText={(text) => {
+            setInputText(text);
+            if (text.toLowerCase() === 'world') {
+              setTooltipMessage('Correct!');
+              setTimeout(() => {
+                setIsFocused(false);
+              }, 1500);
+            }
+          }}
+          style={{ padding: 16, backgroundColor: 'gray', color: 'white' }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false);
+          }}
         />
       </Tooltip>
 
       {/*<FlatList*/}
-      {/*  data={[1, 2, 3]}*/}
-      {/*  renderItem={() => {*/}
+      {/*  data={data}*/}
+      {/*  keyExtractor={(item) => item.toString()}*/}
+      {/*  CellRendererComponent={({ index, style, ...props }) => {*/}
       {/*    return (*/}
-      {/*      <TextInput*/}
-      {/*        value={inputText}*/}
-      {/*        onChangeText={setInputText}*/}
-      {/*        placeholder={'Input text'}*/}
-      {/*        style={{ padding: 16, backgroundColor: 'gray' }}*/}
+      {/*      <View*/}
+      {/*        style={[*/}
+      {/*          style,*/}
+      {/*          {*/}
+      {/*            zIndex: data.length - index,*/}
+      {/*          },*/}
+      {/*        ]}*/}
+      {/*        {...props}*/}
       {/*      />*/}
+      {/*    );*/}
+      {/*  }}*/}
+      {/*  renderItem={() => {*/}
+      {/*    console.log('####################################');*/}
+      {/*    console.log('리렌더링?');*/}
+      {/*    console.log('####################################');*/}
+      {/*    return (*/}
+      {/*      <MemoizedTooltip placement={'bottom'} text={'This is a tooltip'}>*/}
+      {/*        <TextInput*/}
+      {/*          value={inputText}*/}
+      {/*          onChangeText={setInputText}*/}
+      {/*          placeholder={'Input text'}*/}
+      {/*          style={{ padding: 16, backgroundColor: 'gray' }}*/}
+      {/*        />*/}
+      {/*      </MemoizedTooltip>*/}
       {/*    );*/}
       {/*  }}*/}
       {/*/>*/}
