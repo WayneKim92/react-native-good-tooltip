@@ -1,6 +1,6 @@
 {
   "name": "react-native-good-tooltip",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "This tooltip was created with the best UX in mind.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
