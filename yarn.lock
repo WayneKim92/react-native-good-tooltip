@@ -12497,13 +12497,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-anchor-point@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "react-native-anchor-point@npm:1.0.6"
-  checksum: 2f69eb5f7d4404c613dcdedbe2ad29073a8a48ebc21906384bb191cc3f0a4b1659b82708564576c33a83d84ad414b1ca0704ac37ef118866f1af8918ba0a10f1
-  languageName: node
-  linkType: hard
-
 "react-native-builder-bob@npm:^0.30.0":
   version: 0.30.0
   resolution: "react-native-builder-bob@npm:0.30.0"
@@ -12571,7 +12564,6 @@ __metadata:
     prettier: ^3.0.3
     react: 18.2.0
     react-native: 0.74.5
-    react-native-anchor-point: ^1.0.6
     react-native-builder-bob: ^0.30.0
     release-it: ^15.0.0
     typescript: ^5.2.2
