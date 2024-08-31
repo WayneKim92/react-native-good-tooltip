@@ -11,8 +11,8 @@ import {
   type ViewStyle,
   Image,
 } from 'react-native';
-import { withAnchorPoint } from 'react-native-anchor-point';
 import { createArrowShape, getAnchorPoint } from './functions';
+import { withAnchorPoint } from './withAnchorPoint';
 
 // DEFAULT VALUES
 const SIDE_ARROW_INSET = 12;
