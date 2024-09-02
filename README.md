@@ -23,11 +23,10 @@ import Tooltip from 'react-native-good-tooltip';
 // ...
 
 <Tooltip
-  isVisible={true}
+  visible={true} // or false
   text="This is a tooltip"
   placement={'bottom'}
   anchor={'left'}
-  requiredConfirmation
 >
   {/* your component */}
 </Tooltip>
