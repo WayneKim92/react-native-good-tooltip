@@ -333,7 +333,7 @@ const Tooltip = ({
           <>
             <View style={{ width: 8 }} />
             <Image
-              source={require('../assets/close.png')}
+              source={require('./assets/close.png')}
               style={{
                 width: styles?.closeSize?.width || CLOSE_ICON_SIZE.width,
                 height: styles?.closeSize?.height || CLOSE_ICON_SIZE.height,
